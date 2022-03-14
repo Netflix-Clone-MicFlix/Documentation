@@ -5,13 +5,13 @@ This project is made for the Fontys semester-6 personal assignment. The goal is 
 
 The needed essentials are:
 
-CI/CD Pipeline
-Working docker and Kubernetes environment
-Unit testing, integration testing, load testing and a code review
-Security (Authentication with every API call)
-logging
-System Health checks
-Load balancing
-Transcoding (Streaming requirement)
-Caching
-Working and user-friendly streaming platform
+- CI/CD Pipeline
+- Working docker and Kubernetes environment
+- Unit testing, integration testing, load testing and a code review
+- Security (Authentication with every API call)
+- logging
+- System Health checks
+- Load balancing
+- Transcoding (Streaming requirement)
+- Caching
+- Working and user-friendly streaming platform
