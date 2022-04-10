@@ -1,0 +1,92 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:13.2
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_DB}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
+    networks:
+      - nginxproxymanager_default
+
+  keycloak:
+    depends_on:
+      - postgres
+    container_name: local_keycloak
+    volumes:
+      - keycloak-themes:/opt/jboss/keycloak/themes
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: ${POSTGRESQL_DB}
+      DB_USER: ${POSTGRESQL_USER}
+      DB_PASSWORD: ${POSTGRESQL_PASS}
+    image: jboss/keycloak
+    restart: unless-stopped
+    networks:
+      - nginxproxymanager_default
+      
+  streaming-platform:
+    image: mickeykrekels/my-projects:Micflix-Streaming-Platform
+    restart: unless-stopped
+    networks:
+      - nginxproxymanager_default
+    #ports:
+    # - "80:80"
+
+  mongodb_1:
+     image: mongo
+     volumes:
+       - mongo-db_1:/data/db 
+     environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASS}
+     networks:
+      - nginxproxymanager_default 
+      
+  mongodb_2:
+     image: mongo
+     volumes:
+       - mongo-db_2:/data/db 
+     environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASS}
+     networks:
+      - nginxproxymanager_default   
+      
+  movie-service:
+    image: mickeykrekels/my-projects:Micflix-Movie-Service
+    restart: unless-stopped
+    environment:
+      MDB_USERNAME:  ${MONGO_DB_USER}
+      MDB_PASSWORD:  ${MONGO_DB_PASS}  
+      MDB_CLUSTER:  'mongodb_1'
+      MDB_DATABASE: 'movies'
+    depends_on:
+      - mongodb_1
+    networks:
+      - nginxproxymanager_default      
+
+  user-service:
+    image: mickeykrekels/my-projects:Micflix-User-Service
+    restart: unless-stopped
+    environment:
+      MDB_USERNAME:  ${MONGO_DB_USER}
+      MDB_PASSWORD:  ${MONGO_DB_PASS}  
+      MDB_CLUSTER:  'mongodb_2'
+      MDB_DATABASE: 'Users'
+    depends_on:
+      - mongodb_2
+    networks:
+      - nginxproxymanager_default  
+
+volumes:
+  keycloak-themes:
+  mongo-db_1:
+  mongo-db_2:
+
+networks:
+  nginxproxymanager_default:
+    external: true
